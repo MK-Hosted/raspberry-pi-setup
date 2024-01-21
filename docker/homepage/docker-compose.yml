@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage
+    container_name: homepage
+    restart: unless-stopped
+    volumes:
+      - ~/docker/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - service
+    ports:
+      - 11000:3000
