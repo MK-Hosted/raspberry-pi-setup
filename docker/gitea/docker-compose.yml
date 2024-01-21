@@ -1,0 +1,45 @@
+---
+version: "3"
+
+services:
+  app_gitea:
+    image: gitea/gitea:latest
+    restart: unless-stopped
+    environment:
+      - USER_UID=${uid}
+      - USER_GID=${gid}
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=db:3306
+      - GITEA__database__NAME=${db}
+      - GITEA__database__USER=${db_user}
+      - GITEA__database__PASSWD=${db_password}
+    volumes:
+      - /home/pi/docker/gitea/app/:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - gitea_backend
+    ports:
+      - 11001:3000
+      - 11002:22
+    depends_on:
+      - db
+    
+  db_gitea:
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=${db_root_password}
+      - MARIADB_DATABASE=${db}
+      - MARIAD_USER=${db_user}
+      - MARIADB_PASSWORD=${db_password}
+    volumes:
+      - /home/pi/docker/gitea/db:/var/lib/mysql
+    networks:
+      - gitea_backend
+
+networks:
+  gitea:
+    driver: bridge
+    
+
