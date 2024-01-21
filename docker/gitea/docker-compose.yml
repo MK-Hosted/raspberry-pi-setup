@@ -24,14 +24,14 @@ services:
       - 11002:22
     depends_on:
       - db_gitea
-    
+
   db_gitea:
     image: mariadb:latest
     restart: unless-stopped
     environment:
       - MARIADB_ROOT_PASSWORD=${db_root_password}
       - MARIADB_DATABASE=${db}
-      - MARIAD_USER=${db_user}
+      - MARIADB_USER=${db_user}
       - MARIADB_PASSWORD=${db_password}
     volumes:
       - /home/pi/docker/gitea/db:/var/lib/mysql
