@@ -9,7 +9,7 @@ services:
       - TS_HOSTNAME=${tailscale_hostname}
       - TS_STATE_DIR=/config
     volumes:
-      - /home/pi/docker/tailscale:/config
+      - /home/pi/docker/tailscale/config:/config
       - /dev/net/tun:/dev/net/tun
     network_mode: host
     cap_add:
