@@ -5,7 +5,7 @@ services:
     container_name: homepage
     restart: unless-stopped
     volumes:
-      - ~/docker/homepage/config:/app/config
+      - /home/pi/docker/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - service
