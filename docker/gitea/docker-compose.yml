@@ -9,7 +9,7 @@ services:
       - USER_UID=${uid}
       - USER_GID=${gid}
       - GITEA__database__DB_TYPE=mysql
-      - GITEA__database__HOST=db:3306
+      - GITEA__database__HOST=db_gitea:3306
       - GITEA__database__NAME=${db}
       - GITEA__database__USER=${db_user}
       - GITEA__database__PASSWD=${db_password}
