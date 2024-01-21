@@ -11,3 +11,7 @@ services:
       - service
     ports:
       - 11000:3000
+
+networks:
+  service:
+    external: {}
