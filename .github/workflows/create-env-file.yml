@@ -1,0 +1,14 @@
+name: create-env-file
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    
+jobs:
+  create-env-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: create-env-file
+        run: |
+          echo "tailscale_authkey=${{ secrets.tailscale_authkey }} > /docker/tailscale/.env
