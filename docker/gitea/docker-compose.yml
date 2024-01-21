@@ -39,7 +39,8 @@ services:
       - gitea_backend
 
 networks:
-  gitea:
+  gitea_backend:
+    name: gitea_backend
     driver: bridge
     
 
