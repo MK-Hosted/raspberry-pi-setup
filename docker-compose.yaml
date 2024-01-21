@@ -7,9 +7,9 @@ services:
     environment:
       - TS_AUTHKEY=${tailscale_authkey}
       - TS_HOSTNAME=${tailscale_hostname}
-      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_STATE_DIR=/config
     volumes:
-      - ./tailscale:/var/lib/tailscale
+      - /home/pi/docker/tailscale:/config
       - /dev/net/tun:/dev/net/tun
     network_mode: host
     cap_add:
