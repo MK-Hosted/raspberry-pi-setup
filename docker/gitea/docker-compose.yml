@@ -23,7 +23,7 @@ services:
       - 11001:3000
       - 11002:22
     depends_on:
-      - db
+      - db_gitea
     
   db_gitea:
     image: mariadb:latest
