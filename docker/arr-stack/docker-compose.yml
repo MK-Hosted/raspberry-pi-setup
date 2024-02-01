@@ -1,0 +1,103 @@
+---
+version: "3"
+
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./arr-stack/prowlarr/config:/config
+    networks:
+      - arr-stack
+    ports:
+      - 12001:9696
+
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    restart: unless-stopped  
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - TZ=Europe/Berlin  
+    volumes:
+      - ./arr-stack/radarr/config:/config
+      - ./arr-stack/media/movies:/movies
+      - ./arr-stack/downloads:/downloads
+    networks:
+      - arr-stack
+    ports:
+      - 12002:7878
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./arr-stack/sonarr/config/config
+      - ./arr-stack/media/series:/series
+      - ./arr-stack/downloads:/downloads
+    networks:
+      - arr-stack
+    ports:
+      - 12003:8989
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd
+    container_name: sabnzbd
+    restart: unless-stopped   
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./arr-stack/sabnzbd/config:/config
+      - ./arr-stack/downloads:/downloads
+      - ./arr-stack/incomplete-downloads:/incomplete-downloads  
+    networks:
+      - arr-stack
+    ports:
+      - 12004:8080
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr
+    container_name: jellyseerr
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Europe/Berlin
+    volumes:
+      - ./arr-stack/jellyseerr/config:/app/config  
+    networks:
+      - arr-stack
+    ports:
+      - 12005:5055
+    
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./arr-stack/jellyfin/config:/config
+      - ./arr-stack/media/movies:/movies
+      - ./arr-stack/media/series:/series
+    networks:
+      - arr-stack
+    ports:
+      - 12006:8096
+  
+networks:
+  arr-stack: {}

@@ -2,12 +2,12 @@
 version: "3"
 
 services:
-  app:
+  homepage:
     image: ghcr.io/gethomepage/homepage
     container_name: homepage
     restart: unless-stopped
     volumes:
-      - /home/pi/docker/homepage/config:/app/config
+      - ./homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - service
