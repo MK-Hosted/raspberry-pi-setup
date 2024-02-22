@@ -11,7 +11,7 @@ services:
       - PGID=${gid}
       - TZ=Europe/Berlin
     volumes:
-      - ./arr-stack/prowlarr/config:/config
+      - ./prowlarr/config:/config
     networks:
       - arr-stack
     ports:
@@ -26,9 +26,9 @@ services:
       - PGID=${gid}
       - TZ=Europe/Berlin  
     volumes:
-      - ./arr-stack/radarr/config:/config
-      - ./arr-stack/media/movies:/movies
-      - ./arr-stack/downloads:/downloads
+      - ./radarr/config:/config
+      - ./media/movies:/movies
+      - ./downloads:/downloads
     networks:
       - arr-stack
     ports:
@@ -43,9 +43,9 @@ services:
       - PGID=${gid}
       - TZ=Europe/Berlin
     volumes:
-      - ./arr-stack/sonarr/config/config
-      - ./arr-stack/media/series:/series
-      - ./arr-stack/downloads:/downloads
+      - ./sonarr/config/config
+      - ./media/series:/series
+      - ./downloads:/downloads
     networks:
       - arr-stack
     ports:
@@ -60,9 +60,9 @@ services:
       - PGID=${gid}
       - TZ=Europe/Berlin
     volumes:
-      - ./arr-stack/sabnzbd/config:/config
-      - ./arr-stack/downloads:/downloads
-      - ./arr-stack/incomplete-downloads:/incomplete-downloads  
+      - ./sabnzbd/config:/config
+      - ./downloads:/downloads
+      - ./incomplete-downloads:/incomplete-downloads  
     networks:
       - arr-stack
     ports:
@@ -76,7 +76,7 @@ services:
       - LOG_LEVEL=debug
       - TZ=Europe/Berlin
     volumes:
-      - ./arr-stack/jellyseerr/config:/app/config  
+      - ./jellyseerr/config:/app/config  
     networks:
       - arr-stack
     ports:
@@ -91,9 +91,9 @@ services:
       - PGID=${gid}
       - TZ=Europe/Berlin
     volumes:
-      - ./arr-stack/jellyfin/config:/config
-      - ./arr-stack/media/movies:/movies
-      - ./arr-stack/media/series:/series
+      - ./jellyfin/config:/config
+      - ./media/movies:/movies
+      - ./media/series:/series
     networks:
       - arr-stack
     ports:
