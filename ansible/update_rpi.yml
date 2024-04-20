@@ -1,0 +1,12 @@
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: apt-get update
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: apt-get upgrade
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
