@@ -1,7 +1,7 @@
 ---
 services:
-  radarr:
-    container_name: radarr
+  media_radarr:
+    container_name: media_radarr
     image: lscr.io/linuxserver/radarr
     restart: unless-stopped
     environment:
@@ -17,8 +17,8 @@ services:
       - media_servarr
       - networking_caddy_internal
 
-  sonarr:
-    container_name: sonarr
+  media_sonarr:
+    container_name: media_sonarr
     image: lscr.io/linuxserver/sonarr
     restart: unless-stopped
     environment:
@@ -34,8 +34,8 @@ services:
       - media_servarr
       - networking_caddy_internal
 
-  sabnzbd:
-    container_name: sabnzbd
+  media_sabnzbd:
+    container_name: media_sabnzbd
     image: lscr.io/linuxserver/sabnzbd
     restart: unless-stopped
     environment:
@@ -51,8 +51,8 @@ services:
       - media_servarr
       - networking_caddy_internal
 
-  overseerr:
-    container_name: overseerr
+  media_overseerr:
+    container_name: media_overseerr
     image: lscr.io/linuxserver/overseerr
     restart: unless-stopped
     environment:
@@ -66,8 +66,8 @@ services:
       - media_servarr
       - networking_caddy_external
 
-  plex:
-    container_name: plex
+  media_plex:
+    container_name: media_plex
     image: lscr.io/linuxserver/plex
     restart: unless-stopped
     environment:
@@ -85,8 +85,8 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
 
-  tubearchivist:
-    container_name: tubearchivist
+  media_tubearchivist:
+    container_name: media_tubearchivist
     image: bbilly1/tubearchivist
     restart: unless-stopped
     volumes:
@@ -119,8 +119,8 @@ services:
       - tubearchivist_es
       - tubearchivist_redis
 
-  tubearchivist_redis:
-    container_name: tubearchivist_redis
+  media_tubearchivist_redis:
+    container_name: media_tubearchivist_redis
     image: redis/redis-stack-server
     restart: unless-stopped
     volumes:
@@ -130,8 +130,8 @@ services:
     depends_on:
       - tubearchivist_es
 
-  tubearchivist_es:
-    container_name: tubearchivist_elasticsearch
+  media_tubearchivist_elasticsearch:
+    container_name: media_tubearchivist_elasticsearch
     image: bbilly1/tubearchivist-es
     restart: unless-stopped
     environment:

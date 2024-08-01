@@ -15,15 +15,6 @@
 
         @overseerr host overseerr.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @overseerr {
-                reverse_proxy 192.168.178.32:12004
-        }
-
-##############################
-########## external ##########
-##############################
-
-        @homeassistant host homeassistant.{env.DUCKDNS_DOMAIN}.duckdns.org
-        handle @homeassistant {
-                reverse_proxy 192.168.178.26:8123
+                reverse_proxy media_overseerr:12004
         }
 }

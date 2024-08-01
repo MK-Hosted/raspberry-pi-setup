@@ -4,7 +4,7 @@
 }
 
 (trusted_proxy_list) {
-        trusted_proxies 192.168.178.0/24
+        trusted_proxies 192.168.178.0/24 
 }
 
 *.{env.DUCKDNS_DOMAIN}.duckdns.org, {env.DUCKDNS_DOMAIN}.duckdns.org {
@@ -19,11 +19,11 @@
 
         @dozzle host dozzle.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @dozzle {
-                reverse_proxy dozzle:8080 {
+                reverse_proxy monitoring_dozzle:8080 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -32,11 +32,11 @@
 
         @uptime-kuma host uptime-kuma.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @uptime-kuma {
-                reverse_proxy uptime-kuma:3001 {
+                reverse_proxy monitoring_uptime-kuma:3001 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -49,11 +49,11 @@
 
         @heimdall host heimdall.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @heimdall {
-                reverse_proxy heimdall:80 {
+                reverse_proxy dashboard_heimdall:80 {
                         import trusted_proxy_list
                 }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -66,18 +66,18 @@
 
         @authelia host authelia.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @authelia {
-                reverse_proxy authelia:9091 {
+                reverse_proxy networking_authelia:9091 {
                         import trusted_proxy_list
                         }
         }
 
         @wireguard host wireguard.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @wireguard {
-                reverse_proxy wireguard:51821 {
+                reverse_proxy networking_wireguard:51821 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -86,20 +86,20 @@
 
         @pihole host pihole.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @pihole {
-                reverse_proxy pihole:80
+                reverse_proxy networking_pihole:80
         }
 
 #############################
-########## servarr ##########
+########## media ##########
 #############################
 
         @radarr host radarr.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @radarr {
-                reverse_proxy radarr:7878 {
+                reverse_proxy media_radarr:7878 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -108,11 +108,11 @@
 
         @sonarr host sonarr.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @sonarr {
-                reverse_proxy sonarr:8989 {
+                reverse_proxy media_sonarr:8989 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
@@ -121,14 +121,28 @@
 
         @sabnzbd host sabnzbd.{env.DUCKDNS_DOMAIN}.duckdns.org
         handle @sabnzbd {
-                reverse_proxy sabnzbd:8080 {
+                reverse_proxy media_sabnzbd:8080 {
                         import trusted_proxy_list
                         }
 
-                forward_auth authelia:9091 {
+                forward_auth networking_authelia:9091 {
                         uri /api/authz/forward-auth
                         copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                         import trusted_proxy_list
                 }
         }
+
+        @tubearchivist host tubearchivist.{env.DUCKDNS_DOMAIN}.duckdns.org
+        handle @tubearchivist {
+                reverse_proxy media_tubearchivist:8000 {
+                        import trusted_proxy_list
+                        }
+
+                forward_auth networking_authelia:9091 {
+                        uri /api/authz/forward-auth
+                        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+                        import trusted_proxy_list
+                }
+        }
+
 }

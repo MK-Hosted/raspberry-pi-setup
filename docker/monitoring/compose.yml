@@ -1,7 +1,7 @@
 ---
 services:
-  uptime-kuma:
-    container_name: uptime-kuma
+  monitoring_uptime-kuma:
+    container_name: monitoring_uptime-kuma
     image: louislam/uptime-kuma:1
     restart: always
     volumes:
@@ -9,8 +9,8 @@ services:
     networks:
       - networking_caddy_internal
 
-  dozzle:
-    container_name: dozzle
+  monitoring_dozzle:
+    container_name: monitoring_dozzle
     image: amir20/dozzle
     restart: unless-stopped
     volumes:
@@ -27,8 +27,8 @@ services:
       retries: 5
       start_period: 30s
 
-  watchtower:
-    container_name: watchtower
+  monitoring_watchtower:
+    container_name: monitoring_watchtower
     image: containrrr/watchtower
     restart: unless-stopped
     environment:

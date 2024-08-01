@@ -1,7 +1,7 @@
 ---
 services:
-  duckdns:
-    container_name: duckdns
+  networking_duckdns:
+    container_name: networking_duckdns
     image: lscr.io/linuxserver/duckdns
     restart: unless-stopped
     environment:
@@ -16,8 +16,8 @@ services:
     networks:
       - monitoring_service
 
-  caddy_internal:
-    container_name: caddy_internal
+  networking_caddy_internal:
+    container_name: networking_caddy_internal
     image: caddy-duckdns
     restart: unless-stopped
     environment:
@@ -38,8 +38,8 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
 
-  caddy_external:
-    container_name: caddy_external
+  networking_caddy_external:
+    container_name: networking_caddy_external
     image: caddy-duckdns
     restart: unless-stopped
     environment:
@@ -60,8 +60,8 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
 
-  pihole:
-    container_name: pihole
+  networking_pihole:
+    container_name: networking_pihole
     image: pihole/pihole
     restart: unless-stopped
     environment:
@@ -82,8 +82,8 @@ services:
       - 53:53/tcp
       - 53:53/udp
 
-  wireguard:
-    container_name: wireguard
+  networking_wireguard:
+    container_name: networking_wireguard
     image: ghcr.io/wg-easy/wg-easy
     restart: unless-stopped
     environment:
@@ -106,8 +106,8 @@ services:
       - net.ipv4.ip_forward=1
       - net.ipv4.conf.all.src_valid_mark=1
 
-  authelia:
-    container_name: authelia
+  networking_authelia:
+    container_name: networking_authelia
     image: authelia/authelia
     restart: unless-stopped
     environment:
@@ -123,8 +123,8 @@ services:
       - networking_authelia
       - networking_caddy_internal
 
-  redis:
-    container_name: authelia_redis
+  networking_redis:
+    container_name: networking_redis
     image: redis:alpine
     restart: unless-stopped
     environment:
