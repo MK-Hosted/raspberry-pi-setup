@@ -1,0 +1,154 @@
+---
+services:
+  duckdns:
+    container_name: duckdns
+    image: lscr.io/linuxserver/duckdns
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+      - SUBDOMAINS=${duckdns_domain}
+      - TOKEN=${duckdns_token}
+    volumes:
+      - ./duckdns:/config
+    networks:
+      - monitoring_service
+
+  caddy_internal:
+    container_name: caddy_internal
+    image: caddy-duckdns
+    restart: unless-stopped
+    environment:
+      - DUCKDNS_TOKEN=${duckdns_token}
+      - DUCKDNS_DOMAIN=${domain}
+      - EMAIL=${email}
+    volumes:
+      - ./caddy_internal/data:/data
+      - ./caddy_internal/config:/config
+      - ./caddy_internal/Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - networking_caddy_internal
+    ports:
+      - 80:80
+      - 443:443
+    cap_add:
+      - NET_ADMIN
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+  caddy_external:
+    container_name: caddy_external
+    image: caddy-duckdns
+    restart: unless-stopped
+    environment:
+      - DUCKDNS_TOKEN=${duckdns_token}
+      - DUCKDNS_DOMAIN=${duckdns_domain}
+      - EMAIL=${email}
+    volumes:
+      - ./caddy_external/data:/data
+      - ./caddy_external/config:/config
+      - ./caddy_external/Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - networking_caddy_external
+    ports:
+      - 81:80
+      - 444:443
+    cap_add:
+      - NET_ADMIN
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - WEBPASSWORD=${pihole_password}
+      - QUERY_LOGGING=false
+      - PIHOLE_DNS_=1.1.1.1;1.0.0.1
+      - VIRTUAL_HOST=pihole.${duckdns_domain}.duckdns.org
+    volumes:
+      - ./pihole/data:/etc/pihole
+      - ./pihole/dnsmasq.d:/etc/dnsmasq.d
+    networks:
+      networking_caddy_external: {}
+      networking_caddy_internal: {}
+      networking_vpn:
+        ipv4_address: 172.20.0.3
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+
+  wireguard:
+    container_name: wireguard
+    image: ghcr.io/wg-easy/wg-easy
+    restart: unless-stopped
+    environment:
+      - WG_DEFAULT_ADDRESS=10.0.0.x
+      - LANG=de
+      - WG_HOST=${duckdns_domain}.duckdns.org
+      - WG_DEFAULT_DNS=172.20.0.3
+    volumes:
+      - ./wireguard:/etc/wireguard
+    networks:
+      networking_caddy_internal: {}
+      networking_vpn:
+        ipv4_address: 172.20.0.4
+    ports:
+      - 51820:51820/udp
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+
+  authelia:
+    container_name: authelia
+    image: authelia/authelia
+    restart: unless-stopped
+    environment:
+      - TZ=Berlin/Europe
+      - AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/config/secrets/JWT_SECRET
+      - AUTHELIA_SESSION_SECRET_FILE=/config/secrets/SESSION_SECRET
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/config/secrets/STORAGE_ENCRYPTION_KEY
+      - X_AUTHELIA_CONFIG_FILTERS=expand-env
+      - DUCKDNS_DOMAIN=${duckdns_domain}
+    volumes:
+      - ./authelia:/config
+    networks:
+      - networking_authelia
+      - networking_caddy_internal
+
+  redis:
+    container_name: authelia_redis
+    image: redis:alpine
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - ./redis:/data
+    networks:
+      - networking_authelia
+
+networks:
+  monitoring_service:
+    external: true
+  networking_vpn:
+    name: networking_vpn
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  networking_authelia:
+    name: networking_authelia
+    driver: bridge
+  networking_caddy_external:
+    name: networking_caddy_external
+    driver: bridge
+  networking_caddy_internal:
+    name: networking_caddy_internal
+    driver: bridge

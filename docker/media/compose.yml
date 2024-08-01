@@ -1,0 +1,160 @@
+---
+services:
+  radarr:
+    container_name: radarr
+    image: lscr.io/linuxserver/radarr
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./radarr/config:/config
+      - ./radarr/movies:/movies
+      - ./sabnzbd/downloads:/downloads
+    networks:
+      - media_servarr
+      - networking_caddy_internal
+
+  sonarr:
+    container_name: sonarr
+    image: lscr.io/linuxserver/sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./sonarr/config/config
+      - ./sonarr/tv:/tv
+      - ./sabnzbd/downloads:/downloads
+    networks:
+      - media_servarr
+      - networking_caddy_internal
+
+  sabnzbd:
+    container_name: sabnzbd
+    image: lscr.io/linuxserver/sabnzbd
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./sabnzbd/config:/config
+      - ./sabnzbd/downloads:/downloads
+      - ./sabnzbd/incomplete_downloads:/incomplete-downloads
+    networks:
+      - media_servarr
+      - networking_caddy_internal
+
+  overseerr:
+    container_name: overseerr
+    image: lscr.io/linuxserver/overseerr
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+    volumes:
+      - ./overseerr:/config
+    networks:
+      - media_servarr
+      - networking_caddy_external
+
+  plex:
+    container_name: plex
+    image: lscr.io/linuxserver/plex
+    restart: unless-stopped
+    environment:
+      - PUID=${uid}
+      - PGID=${gid}
+      - UMASK=${umask}
+      - TZ=Europe/Berlin
+      - PLEX_CLAIM=${plex_claim}
+    volumes:
+      - ./plex:/config
+      - ./radarr/movies:/movies
+      - ./sonarr/tv:/tv
+      - ./tubearchivist/youtube:/youtube
+    network_mode: host
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+
+  tubearchivist:
+    container_name: tubearchivist
+    image: bbilly1/tubearchivist
+    restart: unless-stopped
+    volumes:
+      - ./tubearchivist/youtube:/youtube
+      - ./tubearchivist/cache:/cache
+    environment:
+      - ES_URL=http://tubearchivist_es:9200
+      - REDIS_HOST=tubearchivist_redis
+      - HOST_UID=${uid}
+      - HOST_GID=${gid}
+      - TA_HOST=${tubearchivist_hostname}
+      - TA_USERNAME=${tubearchivist_username}
+      - TA_PASSWORD=${tubearchivist_password}
+      - ELASTIC_PASSWORD=${tubearchivist_elasticsearch_password}
+      - TZ=Europe/Berlin
+    networks:
+      - media_tubearchivist
+      - networking_caddy_internal
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8000/health
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      - tubearchivist_es
+      - tubearchivist_redis
+
+  tubearchivist_redis:
+    container_name: tubearchivist_redis
+    image: redis/redis-stack-server
+    restart: unless-stopped
+    volumes:
+      - ./tubearchivist_redis:/data
+    networks:
+      - media_tubearchivist
+    depends_on:
+      - tubearchivist_es
+
+  tubearchivist_es:
+    container_name: tubearchivist_elasticsearch
+    image: bbilly1/tubearchivist-es
+    restart: unless-stopped
+    environment:
+      - ELASTIC_PASSWORD=${tubearchivist_elasticsearch_password}
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=true
+      - discovery.type=single-node
+      - path.repo=/usr/share/elasticsearch/data/snapshot
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./tubearchivist_elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - media_tubearchivist
+
+networks:
+  media_servarr:
+    name: media_servarr
+    driver: bridge
+  media_tubearchivist:
+    name: media_tubearchivist
+    driver: bridge
+  networking_caddy_internal:
+    external: true

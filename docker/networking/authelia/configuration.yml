@@ -1,0 +1,52 @@
+---
+server:
+  address: 'tcp://:9091'
+
+log:
+  level: 'debug'
+
+totp:
+  issuer: 'Authelia'
+
+authentication_backend:
+  file:
+    path: '/config/user_database.yml'
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    - domain:
+        - 'sonarr.{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+        - 'radarr.{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+        - 'sabnzbd.{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+      resources:
+        - '^/api([/?].*)?$'
+      policy: 'bypass'
+    - domain:
+        - '*.{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+      policy: 'one_factor'
+
+session:
+  cookies:
+    - name: 'authelia_session'
+      domain: '{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+      authelia_url: 'https://authelia.{{ env "DUCKDNS_DOMAIN" }}.duckdns.org'
+      expiration: '1 hour'
+      inactivity: '5 minutes'
+
+  redis:
+    host: 'redis'
+    port: 6379
+
+regulation:
+  max_retries: 3
+  find_time: '2 minutes'
+  ban_time: '5 minutes'
+
+storage:
+  local:
+    path: '/config/db.sqlite3'
+
+notifier:
+  filesystem:
+    filename: '/config/notification.txt'

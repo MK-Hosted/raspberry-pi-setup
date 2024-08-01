@@ -1,0 +1,31 @@
+name: Caddy + DuckDNS Image Builder
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build_push:
+    permissions:
+      contents: write
+      packages: write
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GitHub Action
+      uses: actions/checkout@main
+      
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{github.actor}}
+        password: ${{secrets.GITHUB_TOKEN}}
+        
+    - name: Build and Push to GitHub Registry
+      run: |
+        docker build . --file Dockerfile --tag ghcr.io/mk-hosted/caddy_duckdns:latest
+        docker image push ghcr.io/mk-hosted/caddy_duckdns:latest

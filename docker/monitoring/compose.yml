@@ -1,0 +1,51 @@
+---
+services:
+  uptime-kuma:
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:1
+    restart: always
+    volumes:
+      - ./uptime-kuma:/app/data
+    networks:
+      - networking_caddy_internal
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - networking_caddy_internal
+    healthcheck:
+      test:
+        - CMD
+        - /dozzle
+        - healthcheck
+      interval: 3s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - WATCHTOWER_NOTIFICATION_URL=${notification_url}
+      - WATCHTOWER_NOTIFICATION_DELAY=2
+      - WATCHTOWER_NOTIFICATIONS_HOSTNAME=${hostname}
+      - WATCHTOWER_MONITOR_ONLY=true
+      - WATCHTOWER_SCHEDULE=0 30 6 * * *
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - monitoring_service
+
+networks:
+  monitoring_service:
+    name: monitoring_service
+    driver: bridge
+  networking_caddy_internal:
+    external: true

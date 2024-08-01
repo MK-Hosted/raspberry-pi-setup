@@ -1,0 +1,18 @@
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: update docker container
+      community.docker.docker_compose_v2:
+        project_name: docker-compose
+        project_src: /home/pi/docker
+        pull: always
+        state: present
+      register: output
+
+    - name: show output for each container
+      ansible.builtin.debug:
+        msg: "Container {{ item.Service }} is {{ item.State }}"
+      loop: "{{ output.containers }}"
+      loop_control:
+        label: "{{ item.Service }}"

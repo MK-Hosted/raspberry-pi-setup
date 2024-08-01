@@ -1,0 +1,29 @@
+{
+        email {env.EMAIL}
+#       acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+*.{env.DUCKDNS_DOMAIN}.duckdns.org, {env.DUCKDNS_DOMAIN}.duckdns.org {
+        tls {
+                dns duckdns {env.DUCKDNS_TOKEN} 
+                resolvers 1.1.1.1 1.0.0.1
+        }
+
+#############################
+########## servarr ##########
+#############################
+
+        @overseerr host overseerr.{env.DUCKDNS_DOMAIN}.duckdns.org
+        handle @overseerr {
+                reverse_proxy 192.168.178.32:12004
+        }
+
+##############################
+########## external ##########
+##############################
+
+        @homeassistant host homeassistant.{env.DUCKDNS_DOMAIN}.duckdns.org
+        handle @homeassistant {
+                reverse_proxy 192.168.178.26:8123
+        }
+}
