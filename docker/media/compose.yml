@@ -1,7 +1,6 @@
----
 services:
-  media_radarr:
-    container_name: media_radarr
+  radarr:
+    container_name: radarr
     image: lscr.io/linuxserver/radarr
     restart: unless-stopped
     environment:
@@ -10,15 +9,15 @@ services:
       - UMASK=${umask}
       - TZ=Europe/Berlin
     volumes:
-      - ./radarr/config:/config
-      - ./radarr/movies:/movies
-      - ./sabnzbd/downloads:/downloads
+      - ./radarr:/config
+      - /mnt/disk1/media/movies:/movies
+      - /mnt/disk1/media/downloads:/downloads
     networks:
-      - media_servarr
-      - networking_caddy_internal
+      - media
+      - caddy_internal
 
-  media_sonarr:
-    container_name: media_sonarr
+  sonarr:
+    container_name: sonarr
     image: lscr.io/linuxserver/sonarr
     restart: unless-stopped
     environment:
@@ -27,15 +26,15 @@ services:
       - UMASK=${umask}
       - TZ=Europe/Berlin
     volumes:
-      - ./sonarr/config/config
-      - ./sonarr/tv:/tv
-      - ./sabnzbd/downloads:/downloads
+      - ./sonarr:/config
+      - /mnt/disk1/media/tv:/tv
+      - /mnt/disk1/media/downloads:/downloads
     networks:
-      - media_servarr
-      - networking_caddy_internal
+      - media
+      - caddy_internal
 
-  media_sabnzbd:
-    container_name: media_sabnzbd
+  sabnzbd:
+    container_name: sabnzbd
     image: lscr.io/linuxserver/sabnzbd
     restart: unless-stopped
     environment:
@@ -44,30 +43,31 @@ services:
       - UMASK=${umask}
       - TZ=Europe/Berlin
     volumes:
-      - ./sabnzbd/config:/config
-      - ./sabnzbd/downloads:/downloads
-      - ./sabnzbd/incomplete_downloads:/incomplete-downloads
+      - ./sabnzbd:/config
+      - /mnt/disk1/media/downloads:/downloads
+      - /mnt/disk1/media/incomplete-downloads:/incomplete-downloads
     networks:
-      - media_servarr
-      - networking_caddy_internal
+      - media
+      - caddy_internal
 
-  media_overseerr:
-    container_name: media_overseerr
+  overseerr:
+    container_name: overseerr
     image: lscr.io/linuxserver/overseerr
     restart: unless-stopped
     environment:
       - PUID=${uid}
       - PGID=${gid}
       - UMASK=${umask}
+      - LOG_LEVEL=debug
       - TZ=Europe/Berlin
     volumes:
       - ./overseerr:/config
     networks:
-      - media_servarr
-      - networking_caddy_external
+      - media
+      - caddy_external
 
-  media_plex:
-    container_name: media_plex
+  plex:
+    container_name: plex
     image: lscr.io/linuxserver/plex
     restart: unless-stopped
     environment:
@@ -78,33 +78,35 @@ services:
       - PLEX_CLAIM=${plex_claim}
     volumes:
       - ./plex:/config
-      - ./radarr/movies:/movies
-      - ./sonarr/tv:/tv
-      - ./tubearchivist/youtube:/youtube
+      - /mnt/disk1/media/movies:/movies
+      - /mnt/disk1/media/tv:/tv
+      - /mnt/disk1/media/youtube:/youtube
     network_mode: host
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
 
-  media_tubearchivist:
-    container_name: media_tubearchivist
+  tubearchivist:
+    container_name: tubearchivist
     image: bbilly1/tubearchivist
     restart: unless-stopped
-    volumes:
-      - ./tubearchivist/youtube:/youtube
-      - ./tubearchivist/cache:/cache
     environment:
-      - ES_URL=http://tubearchivist_es:9200
+      - ES_URL=http://tubearchivist_elasticsearch:9200
       - REDIS_HOST=tubearchivist_redis
       - HOST_UID=${uid}
       - HOST_GID=${gid}
-      - TA_HOST=${tubearchivist_hostname}
+      - TA_HOST=192.168.178.59 tubearchivist.${duckdns_domain}.duckdns.org
       - TA_USERNAME=${tubearchivist_username}
       - TA_PASSWORD=${tubearchivist_password}
       - ELASTIC_PASSWORD=${tubearchivist_elasticsearch_password}
       - TZ=Europe/Berlin
+    volumes:
+      - /mnt/disk1/media/youtube:/youtube
+      - ./tubearchivist:/cache
     networks:
-      - media_tubearchivist
-      - networking_caddy_internal
+      - tubearchivist
+      - caddy_internal
+    ports:
+      - 8000:8000
     healthcheck:
       test:
         - CMD
@@ -115,23 +117,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    depends_on:
-      - tubearchivist_es
-      - tubearchivist_redis
 
-  media_tubearchivist_redis:
-    container_name: media_tubearchivist_redis
+  tubearchivist_redis:
+    container_name: tubearchivist_redis
     image: redis/redis-stack-server
     restart: unless-stopped
     volumes:
       - ./tubearchivist_redis:/data
     networks:
-      - media_tubearchivist
-    depends_on:
-      - tubearchivist_es
+      - tubearchivist
 
-  media_tubearchivist_elasticsearch:
-    container_name: media_tubearchivist_elasticsearch
+  tubearchivist_elasticsearch:
+    container_name: tubearchivist_elasticsearch
     image: bbilly1/tubearchivist-es
     restart: unless-stopped
     environment:
@@ -140,21 +137,37 @@ services:
       - xpack.security.enabled=true
       - discovery.type=single-node
       - path.repo=/usr/share/elasticsearch/data/snapshot
+    volumes:
+      - ./tubearchivist_elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - tubearchivist
     ulimits:
       memlock:
         soft: -1
         hard: -1
+        
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf
+    environment:
+      - TZ=Europe/Berlin
     volumes:
-      - ./tubearchivist_elasticsearch:/usr/share/elasticsearch/data
+      - /mnt/disk1/media/audiobooks:/audiobooks
+      - /mnt/disk1/media/podcasts:/podcasts
+      - ./audiobookshelf/config:/config
+      - ./audiobookshelf/metadata:/metadata
     networks:
-      - media_tubearchivist
+      - media
+      - caddy_internal
 
 networks:
-  media_servarr:
-    name: media_servarr
+  media:
+    name: media
     driver: bridge
-  media_tubearchivist:
-    name: media_tubearchivist
+  tubearchivist:
+    name: tubearchivist
     driver: bridge
-  networking_caddy_internal:
+  caddy_internal:
+    external: true
+  caddy_external:
     external: true
