@@ -7,7 +7,23 @@ on:
     - cron: '0 0 * * *'
   
 jobs:
-  build_push:
+  build:
+    permissions:
+      contents: write
+      packages: write
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GitHub Action
+      uses: actions/checkout@main
+      
+    - name: Build and to GitHub Registry
+      run: |
+        docker build . --file docker/Dockerfile --tag ghcr.io/mk-hosted/caddy_duckdns:latest
+
+
+        
+  push:
     permissions:
       contents: write
       packages: write
@@ -26,5 +42,4 @@ jobs:
         
     - name: Build and Push to GitHub Registry
       run: |
-        docker build . --file docker/Dockerfile --tag ghcr.io/mk-hosted/caddy_duckdns:${{github.sha}}
         docker image push ghcr.io/mk-hosted/caddy_duckdns:latest
